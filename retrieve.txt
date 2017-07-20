@@ -1,0 +1,6 @@
+select datepart(day,datestart) as day, case command
+when 16385 then 'Retrieve'
+end as "command", COUNT(distinct studyuid) as StudyCount from tblAuditTrailDICOM
+where DateStart>dateadd(day,-30,getdate())
+and CompletionCode=0 and Command in (16385)
+group by datepart(day,datestart), command
