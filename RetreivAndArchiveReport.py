@@ -1,5 +1,6 @@
 """
 This program wil obtain retrieve and archive volume in MB and GB for each ASP customer.
+It will compile the data into worksheet and email it  to recipients.
 """
 import pyodbc
 import datetime
