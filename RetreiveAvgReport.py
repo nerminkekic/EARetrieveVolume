@@ -1,5 +1,5 @@
 """
-This program wil obtain retrieve and archive volume in MB and GB for each ASP customer.
+This program wil obtain retrieve and archive volume in MB and GB for each ASP customer..
 """
 import pyodbc
 import datetime
