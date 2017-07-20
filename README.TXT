@@ -1,4 +1,4 @@
-This script is used to obtain total Archive and Retreive volume for all ASP Customers.
+This script is used to obtain total Archive and Retrieve volume for all ASP Customers.
 The script will perform main 3 steps:
 
     1. Pull data from Data Base server.
