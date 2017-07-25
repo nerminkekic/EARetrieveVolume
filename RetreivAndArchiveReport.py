@@ -188,7 +188,7 @@ def send_email(file_attachment):
 
     # Define email recipients
     to_email = [
-        "nerminkekic@ge.com", "aspmonitoring@ge.com"
+        "na@na.com"
         ]
     # Define From email
     from_email = "aspmonitoring@ge.com"
