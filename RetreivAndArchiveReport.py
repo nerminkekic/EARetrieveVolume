@@ -1,5 +1,5 @@
 """
-This program wil obtain retrieve and archive volume in MB and GB for each ASP customer.
+This program wil obtain archive and retrieve volume in MB for each ASP customer.
 It will compile the data into worksheet and email it  to recipients.
 """
 import pyodbc
@@ -34,7 +34,7 @@ def archive_retrieve_report():
     work_book = Workbook()
     work_sheet = work_book.active
     work_sheet.title = "EA Monthly Report"
-    work_sheet.append(['Archive Name', 'Average Retrieve Volume'])
+    work_sheet.append(['Archive Name', 'State', 'Data in MB', 'Data in GB', 'Data in TB'])
 
     # Assign font and background color properties for Column Title cells
     f = Font(name="Arial", size=14, bold=True, color="FF000000")
@@ -42,41 +42,50 @@ def archive_retrieve_report():
 
     work_sheet["A1"].fill = fill
     work_sheet["B1"].fill = fill
+    work_sheet["C1"].fill = fill
+    work_sheet["D1"].fill = fill
+    work_sheet["E1"].fill = fill
 
     work_sheet["A1"].font = f
     work_sheet["B1"].font = f
+    work_sheet["C1"].font = f
+    work_sheet["D1"].font = f
+    work_sheet["E1"].font = f
 
     # Set Column width
     work_sheet.column_dimensions["A"].width = 25.0
-    work_sheet.column_dimensions["B"].width = 45.0
+    work_sheet.column_dimensions["B"].width = 25.0
+    work_sheet.column_dimensions["C"].width = 35.0
+    work_sheet.column_dimensions["D"].width = 35.0
+    work_sheet.column_dimensions["E"].width = 35.0
 
     # Obtain Exam Volume for all virtual archives and write the data to excel sheet.
     for archive in virtual_archives:
         # Obtains archive volume from SQL server.
         rows = retrieve_volume(archive)
 
-        total_retrieves = 0
-        avg_retrieves = 0
         for row in rows:
-            total_retrieves += row[2]
 
-        # Calculate average retrieves
-        avg_retrieves = total_retrieves / 30
+            # Adds archive name and exam volume to Worksheet.
+            work_sheet.append([archive,                             # Archive Name
+                               row[1],                              # State
+                               round(row[2], 2),                    # Data in MB
+                               round((row[2] / 1024), 2),           # Data in GB
+                               round((row[2] / 1024 / 1024), 2)     # Data in TB
+                               ])
 
-        # Adds archive name and exam volume to Worksheet.
-        work_sheet.append([archive,  # Archive Name
-                           round(avg_retrieves, 2),  # Average Retrieves
-                           ])
-
-        print("Added {} Average Retrieve Volume to Workbook!".format(archive))
+        print("Added {} Archive and Retrieve Volume to Workbook!".format(archive))
+        # Add blank line to worksheet for spacing
+        work_sheet.append([])
 
     # Saves Excel worksheet.
-    excel_filename = "ASP_Average_Retrieves_{}.xlsx".format(datetime.datetime.now().strftime("%Y-%m-%d"))
+    excel_filename = "ASP_Archive_Retrieve_Report_{}.xlsx".format(datetime.datetime.now().strftime("%Y-%m-%d"))
     work_book.save(excel_filename)
 
     # # Send email with attachment.
     # send_email(excel_filename)
     #
+
 
 # Obtain Archive Names from SQL Server.
 def get_archives():
@@ -89,7 +98,7 @@ def get_archives():
     # Obtain credentials from file
     with open("data.txt", "r") as f:
         read_data = f.readline().split()
-
+        f.close()
 
     # Define data base connection parameters.
     sqlserver = 'SQL1'
@@ -132,6 +141,7 @@ def retrieve_volume(db_name):
     # Obtain credentials from file
     with open("data.txt", "r") as f:
         read_data = f.readline().split()
+        f.close()
 
     # Define data base connection parameters.
     sqlserver = 'SQL1'
@@ -150,12 +160,22 @@ def retrieve_volume(db_name):
     cur = conn.cursor()
     # Execute query on Data Base.
     cur.execute("""
-                select datepart(day,datestart) as day, case command
-                when 16385 then 'Retrieve'
-                end as "command", COUNT(distinct studyuid) as StudyCount from tblAuditTrailDICOM
-                where DateStart>dateadd(day,-30,getdate())
-                and CompletionCode=0 and Command in (16385)
-                group by datepart(day,datestart), command
+                SELECT 
+                  State,
+                  CASE State 
+                    When 1 Then 'Writable'
+                    When 2 Then 'Read Only'
+                    When 3 Then 'Frozen'
+                    When 4 Then 'Archived'
+                    When 5 Then 'Out Cache'
+                    Else 'Unknown'
+                  End AS "States",
+                 -- Count(State) AS "# of Images",
+                  Sum(Abs(Bytesize/1024/1024)) AS "MB of data",
+                  GetDate() AS "Date/Time"
+                from tblfile with (nolock)
+                group by state with Rollup
+                order by state      
                 """)
     rows = cur.fetchall()
     # Close SQL Server Connections.
