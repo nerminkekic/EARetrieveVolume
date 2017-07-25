@@ -83,8 +83,8 @@ def archive_retrieve_report():
     work_book.save(excel_filename)
 
     # # Send email with attachment.
-    # send_email(excel_filename)
-    #
+    send_email(excel_filename)
+
 
 
 # Obtain Archive Names from SQL Server.
@@ -214,7 +214,7 @@ def send_email(file_attachment):
     from_email = "na@na.com"
 
     # Create email content
-    msg["Subject"] = "ASP Monthly Report {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    msg["Subject"] = "ASP Archive Retrieve Report {}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     msg["From"] = from_email
     msg["To"] = ",".format(to_email)
     msg.attach(part)
