@@ -75,8 +75,8 @@ def archive_retrieve_report():
     work_book.save(excel_filename)
 
     # # Send email with attachment.
-    send_email(excel_filename)
-
+    # send_email(excel_filename)
+    #
 
 # Obtain Archive Names from SQL Server.
 def get_archives():
@@ -86,11 +86,16 @@ def get_archives():
     # Create list to store archive names.
     archive_list = []
 
+    # Obtain credentials from file
+    with open("data.txt", "r") as f:
+        read_data = f.readline().split()
+
+
     # Define data base connection parameters.
     sqlserver = 'SQL1'
     database = 'RSAdmin'
-    username = 'admin'
-    password = 'Bosnia66s'
+    username = read_data[0]
+    password = read_data[1]
 
     # Establish DB connections.
     conn = pyodbc.connect(
@@ -124,11 +129,15 @@ def retrieve_volume(db_name):
     This function will obtain archive volume form SQL server.
     """
 
+    # Obtain credentials from file
+    with open("data.txt", "r") as f:
+        read_data = f.readline().split()
+
     # Define data base connection parameters.
     sqlserver = 'SQL1'
     database = db_name
-    username = 'admin'
-    password = 'Bosnia66s'
+    username = read_data[0]
+    password = read_data[1]
 
     # Establish DB connections.
     conn = pyodbc.connect(
